@@ -11,6 +11,11 @@ class AppConvertisseur extends StatelessWidget {
       title: 'Convertisseur de Mesures',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        hintColor: Colors.blueAccent,
+        textTheme: const TextTheme(
+          displayLarge: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold),
+          bodyLarge: TextStyle(fontSize: 18.0),
+        ),
       ),
       home: PageConvertisseur(),
     );
@@ -27,7 +32,7 @@ class _PageConvertisseurState extends State<PageConvertisseur> {
 
   String _uniteDepart = 'mètres';
   String _uniteArrivee = 'kilomètres';
-  double _resultat = 0.0;
+  String _resultat = "0.0";
 
   final Map<String, int> _mesuresMap = {
     'mètres': 0,
@@ -56,10 +61,16 @@ class _PageConvertisseurState extends State<PageConvertisseur> {
       int numDepuis = _mesuresMap[_uniteDepart]!;
       int numVers = _mesuresMap[_uniteArrivee]!;
       double valeur = double.tryParse(_controller.text) ?? 0.0;
-      _resultat = valeur * _formules[numDepuis][numVers];
+      double resultat = valeur * _formules[numDepuis][numVers];
+      _resultat = ajusterResultat(resultat);
     });
   }
+  String ajusterResultat(double resultat) { // Permet de résoudre les soucis de conversion des doubles
+    String resultatStr = resultat.toStringAsFixed(10);
+    resultatStr = double.parse(resultatStr).toString();
 
+    return resultatStr;
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -71,47 +82,56 @@ class _PageConvertisseurState extends State<PageConvertisseur> {
         child: Column(
           children: [
             const Spacer(),
-            TextField(
-              controller: _controller,
-              decoration: const InputDecoration(
-                hintText: 'Entrez la valeur à convertir',
+            Card(
+              elevation: 4.0,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    TextField(
+                      controller: _controller,
+                      decoration: const InputDecoration(
+                        hintText: 'Entrez la valeur à convertir',
+                      ),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true), // Challenge B fait
+                    ),
+                    const SizedBox(height: 10),
+                    DropdownButton<String>(
+                      value: _uniteDepart,
+                      onChanged: (newValue) {
+                        setState(() {
+                          _uniteDepart = newValue!;
+                        });
+                      },
+                      items: _mesuresMap.keys.map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                    ),
+                    DropdownButton<String>(
+                      value: _uniteArrivee,
+                      onChanged: (newValue) {
+                        setState(() {
+                          _uniteArrivee = newValue!;
+                        });
+                      },
+                      items: _mesuresMap.keys.map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                    ),
+                    ElevatedButton(
+                      onPressed: _convertir,
+                      child: const Text('Convertir'),
+                    ),
+                  ],
+                ),
               ),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true), // Challenge B fait
-            ),
-            Spacer(),
-            DropdownButton<String>(
-              value: _uniteDepart,
-              onChanged: (newValue) {
-                setState(() {
-                  _uniteDepart = newValue!;
-                });
-              },
-              items: _mesuresMap.keys
-                  .map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-            ),
-            DropdownButton<String>(
-              value: _uniteArrivee,
-              onChanged: (newValue) {
-                setState(() {
-                  _uniteArrivee = newValue!;
-                });
-              },
-              items: _mesuresMap.keys
-                  .map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-            ),
-            ElevatedButton(
-              onPressed: _convertir,
-              child: const Text('Convertir'),
             ),
             const Spacer(),
             Text(
