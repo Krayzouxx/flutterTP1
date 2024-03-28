@@ -33,6 +33,10 @@ class _PageConvertisseurState extends State<PageConvertisseur> {
   String _uniteDepart = 'mètres';
   String _uniteArrivee = 'kilomètres';
   String _resultat = "0.0";
+  final TextStyle styleEntree = TextStyle(
+    fontSize: 20,
+    color: Colors.blue[900],
+  );
 
   final Map<String, int> _mesuresMap = {
     'mètres': 0,
@@ -61,8 +65,12 @@ class _PageConvertisseurState extends State<PageConvertisseur> {
       int numDepuis = _mesuresMap[_uniteDepart]!;
       int numVers = _mesuresMap[_uniteArrivee]!;
       double valeur = double.tryParse(_controller.text) ?? 0.0;
-      double resultat = valeur * _formules[numDepuis][numVers];
-      _resultat = ajusterResultat(resultat);
+      if (_formules[numDepuis][numVers] == 0){
+        _resultat = "Unités non compatibles";
+      } else {
+        double resultat = valeur * _formules[numDepuis][numVers];
+        _resultat = ajusterResultat(resultat);
+      }
     });
   }
   String ajusterResultat(double resultat) { // Permet de résoudre les soucis de conversion des doubles
@@ -71,6 +79,15 @@ class _PageConvertisseurState extends State<PageConvertisseur> {
 
     return resultatStr;
   }
+  
+  String afficheResultat(String resultat) {
+    if (resultat == "Unités non compatibles"){
+      return resultat;
+    } else {
+      return '${_controller.text} $_uniteDepart est égal à  : $_resultat $_uniteArrivee';
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -89,11 +106,13 @@ class _PageConvertisseurState extends State<PageConvertisseur> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
+                    Text(
+                      'Valeur à convertir',
+                      style: styleEntree,
+                    ),
                     TextField(
                       controller: _controller,
-                      decoration: const InputDecoration(
-                        hintText: 'Entrez la valeur à convertir',
-                      ),
+                      textAlign: TextAlign.center,
                       keyboardType: const TextInputType.numberWithOptions(decimal: true), // Challenge B fait
                     ),
                     const SizedBox(height: 10),
@@ -125,9 +144,11 @@ class _PageConvertisseurState extends State<PageConvertisseur> {
                         );
                       }).toList(),
                     ),
-                    ElevatedButton(
+                    TextButton(
                       onPressed: _convertir,
-                      child: const Text('Convertir'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue[100]),
+                      child: const Text('Convertir')
                     ),
                   ],
                 ),
@@ -135,7 +156,7 @@ class _PageConvertisseurState extends State<PageConvertisseur> {
             ),
             const Spacer(),
             Text(
-              '${_controller.text} $_uniteDepart est égal à  : $_resultat $_uniteArrivee',
+              afficheResultat(_resultat),
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 20,
